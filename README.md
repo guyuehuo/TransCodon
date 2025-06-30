@@ -19,7 +19,7 @@ All training, fine-tuning, and held-out evaluation datasets are available at:
 🔗 [Google Drive Dataset Folder](https://drive.google.com/drive/folders/17ZKlxM0VF38s9eQXwpKJ6WlgmNMYsZjI?usp=drive_link)
 
 
-##🛠Installation
+## 🛠Installation
 1. Clone the repository
 
     ``` 
@@ -36,7 +36,7 @@ We recommend using conda or [virtualenv].
     pip install -r requirements.txt
     ``` 
  
-##🌍 Usage
+## 🌍 Usage
 
 ``` 
 python predict.py \
@@ -46,7 +46,7 @@ python predict.py \
 --model_path checkpoints/transcodon.pt
 ```
 
-##📊 Evaluation
+## 📊 Evaluation
 We provide Jupyter Notebooks for evaluation on metrics like:
 
     Codon Recovery Rate
@@ -63,7 +63,7 @@ We provide Jupyter Notebooks for evaluation on metrics like:
     
     Downstream translation prediction (MRL)
 
-##📄 Citation
+## 📄 Citation
 If you use this work, please cite:
 
     @misc{TransCodon2025,
@@ -72,3 +72,8 @@ If you use this work, please cite:
       year={2025},
       note={Preprint available upon request}
     }
+
+## 📬 Contact
+For questions or feedback, feel free to contact:
+📧 gu-yuehuo@qq.com
+
