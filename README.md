@@ -22,19 +22,19 @@ All training, fine-tuning, and held-out evaluation datasets are available at:
 ## 🛠Installation
 1. Clone the repository
 
-    ``` 
+
     git clone https://github.com/guyuehuo/transcodon.git
     cd transcodon
-   ```
+
    
 2. Set up environment
 
 We recommend using conda or [virtualenv].
 
-    ``` bash
+
     conda env create -f environment.yml
     conda activate transcodon
-    ``` 
+
  
 ## 🌍 Usage
 
@@ -42,7 +42,7 @@ We recommend using conda or [virtualenv].
 
 Generate DNA sequences from amino acid sequences using a pretrained TransCodon model:
 
-    ```
+
     python pretraining.py \
         --train_data data/finetune/train.tsv \
         --output_dir checkpoints/pretain_model \
@@ -51,13 +51,13 @@ Generate DNA sequences from amino acid sequences using a pretrained TransCodon m
         --accumulate_gradients 6\
         --lr 2e-4 \
         --num_gpus 4\
-    ```
+ 
 
 2. Finetune
 
 Finetune the pretrained model on a custom dataset (e.g., for codon optimization or other downstream tasks):
     
-    ```
+  
     python fintune.py \
         --train_data data/finetune/fintune.tsv \
         --output_dir checkpoints/finetuned_model \
@@ -67,18 +67,17 @@ Finetune the pretrained model on a custom dataset (e.g., for codon optimization 
         --accumulate_gradients 6\
         --lr 2e-4 \
         --num_gpus 2\
-    ```
+ 
 
 3. Infer
 
 Given an input amino acid sequence and a specified host species, TransCodon generates a DNA sequence that conforms to the natural codon usage landscape of the target species. This enables codon optimization for heterologous expression while preserving biological realism.
-    
-    ```
-        python infer.py \
-            --input_data test_amino_acid.csv \
-            --output_file optimized_dna.csv \
-            --model_checkpoint checkpoints/finetuned_model.pt
-    ```
+ 
+    python infer.py \
+        --input_data test_amino_acid.csv \
+        --output_file optimized_dna.csv \
+        --model_checkpoint checkpoints/finetuned_model.pt
+
 
 ## 📊 Evaluation
 We provide python scripts for evaluation on metrics like:
