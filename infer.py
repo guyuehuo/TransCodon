@@ -126,24 +126,6 @@ def AA_tokenize(seq: str):
     #print("token",token)
     return token
 
-
-class MultiClassFocalLoss(nn.Module):
-    def __init__(self, gamma=2.0, alpha=None):
-        super().__init__()
-        self.gamma = gamma
-        self.alpha = alpha  # 可传入类别权重（与CrossEntropy的weight类似）
-
-    def forward(self, inputs, targets):
-        ce_loss = nn.functional.cross_entropy(
-            inputs, targets, reduction='none', ignore_index=-100
-        )
-        pt = torch.exp(-ce_loss)                     # 计算预测概率
-        focal_loss = (1 - pt) ** self.gamma * ce_loss  # Focal Loss核心公式
-        # if self.alpha is not None:
-        #     alpha_weights = self.alpha[targets]       # 根据目标标签选择权重
-        #     focal_loss = alpha_weights * focal_loss
-        
-        return focal_loss.mean()
     
 class CodonModel(pl.LightningModule):
     """PyTorch Lightning module for standard training."""
@@ -222,17 +204,6 @@ class CodonModel(pl.LightningModule):
         )
         self.log('train_mask_loss', loss)
         
-        # if (struct_label != -100).any(): 
-        #     loss_2d = self.loss_fn_2d(
-        #         struct_label_output.view(-1,struct_label_output.size(2)),
-        #         struct_label.view(-1)
-        #     )
-        #     self.log('train_2d_mask_loss', loss_2d)
-
-        #     loss += 0.2*loss_2d
-       
-        #     self.log('train_total_loss', loss)
-
         return loss
 
     def validation_step(self, val_batch, batch_idx):
@@ -251,14 +222,6 @@ class CodonModel(pl.LightningModule):
             labels.view(-1)
         )
         self.log('val_mask_loss', loss)
-        #print("struct_label_output.size(2)",struct_label_output.size(2))
-        # if (struct_label != -100).any(): 
-        #     loss_2d = self.loss_fn_2d(
-        #         struct_label_output.view(-1,struct_label_output.size(2)),
-        #         struct_label.view(-1)
-        #     )
-        #     self.log('val_2d_mask_loss', loss_2d)
-        #self.log('val_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         return loss
     
 
@@ -266,261 +229,58 @@ if __name__ == '__main__':
     # Parsing command-line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_checkpoint', type=str,default="./Codon-AA-run/latest-120000.ckpt" , help='Path to the trained model checkpoint')
-    parser.add_argument('--input_data', type=str,default="AAAAAAAA",help='Path to the input data for inference')
+    parser.add_argument('--input_data', type=str,default="input.csv",help='Path to the input data for inference')
     parser.add_argument('--batch_size', type=int, default=6, help='Batch size for inference')
-    parser.add_argument('--output_file', type=str, default='predictions.txt', help='File to save the predictions')
+    parser.add_argument('--output_file', type=str, default='predictions.csv', help='File to save the predictions')
 
     args = parser.parse_args()
 
     # Load the alphabet and data module
     alphabet = Alphabet.from_architecture('CodonModel')
-    # print(alphabet.all_toks,len(alphabet.all_toks))
- 
+    model = CodonModel.load_from_checkpoint(args.model_checkpoint, alphabet=alphabet)
+    #model.to(device)
+    model.eval()  # Set the model to evaluation mode
+    model.freeze()  # Ensure no gradients are calculated
+    data=pd.read_csv(args.input_data)
+    prediction_dna_list = []
 
-    weight_name="transcodon-pretrain/latest-330000"
-    name_list=[10,50,100,125,42]
-    name_list=[42]
-    new_data=False
-    for i in name_list:
-        use_repo=True
-        weight_name="transcodon-run28_fintune-epoch15-top10/epoch=14-step=7626"
-        args.model_checkpoint=weight_name+".ckpt"
-        print(weight_name)
+    # Calculate similarity scores for each pair of sequences
+    is_valid = True
 
-        #device = "cuda" if torch.cuda.is_available() else "cpu"
-        # Load the trained model
-        # model = CodonModel.load_from_checkpoint(args.model_checkpoint, alphabet=alphabet,strict=False)
-        model = CodonModel.load_from_checkpoint(args.model_checkpoint, alphabet=alphabet)
-        #model.to(device)
-        model.eval()  # Set the model to evaluation mode
-        model.freeze()  # Ensure no gradients are calculated
+    for _, row in data.iterrows():
+        AA_seq = row["protein"]
+        input=AA_tokenize(AA_seq)
+        # if not use_repo:
+        if len(input)>2048*3:
+                #count+=1
+                AA_seq=AA_seq[:2048]
+                input=input[:2048*3]
+        organism = ORGANISM2ID[row["organism"]]
+       
 
+        embedding,logits,prediction_dna = embed_sequence(model,input,organism,AA_seq)
 
+        # Append results to lists
+        prediction_dna_list.append(prediction_dna.replace('U','T'))
 
-        name=['A','E','H','M','S','D','E1','E2']
+        is_valid = _split_into_codons(prediction_dna,AA_seq)
 
-        dataA = pd.read_csv("test_test_data/test_Arabidopsis_thaliana.csv")
-        dataE = pd.read_csv("test_test_data/test_Escherichia_coli_general.csv")
-        dataH = pd.read_csv("est_test_data/test_Homo_sapiens.csv")
-        dataM = pd.read_csv("test_test_data/test_Mus_musculus.csv")
-        dataS = pd.read_csv("test_test_data/test_Saccharomyces_cerevisiae.csv")
-        dataD = pd.read_csv("test_test_data/test_Drosophila_melanogaster.csv")
-        dataE1 = pd.read_csv("test_test_data/test_Escherichia_coli_1.csv")
-        dataE2 = pd.read_csv("test_test_data/test_Escherichia_coli_2.csv")
-
-
-        count=0
-
-        for i in range(len(name)):
-            if i==0:
-                data=dataA
-            elif i==1:
-                data=dataE
-            elif i==2:
-                data=dataH
-            elif i==3:
-                data=dataM
-            elif i==5:
-                data=dataD
-            elif i==6:
-                data=dataE1
-            elif i==7:
-                data=dataE2
-            else:
-                data=dataS
-            
-        
-
-            prediction_dna_list = []
-
-            # Calculate similarity scores for each pair of sequences
-            is_valid = True
-            # continue
-
-            # if i==0 or i==1:
-            #     continue
-            for _, row in data.iterrows():
-                AA_seq = row["protein"]
-                input=AA_tokenize(AA_seq)
-                # if not use_repo:
-                if len(input)>2048*3:
-                        #count+=1
-                        AA_seq=AA_seq[:2048]
-                        input=input[:2048*3]
-                organism = ORGANISM2ID[row["organism"]]
-                # input=torch.device(input)
-                # organism=torch.device(organism)
-                # #print(f"input:{input}")
-                #print(f"organism:{organism}")
-                # print(input)
-                # print("len input",input)
-
-
-                embedding,logits,prediction_dna = embed_sequence(model,input,organism,AA_seq)
-
-                # Append results to lists
-                prediction_dna_list.append(prediction_dna.replace('U','T'))
-
-                is_valid = _split_into_codons(prediction_dna,AA_seq)
-
-                if not is_valid:
-                    print(f"prediction_dna:{prediction_dna} is not valid")
-                    exit()
-            
-
-            # Create a new DataFrame with similarity scores
-            predict_data = pd.DataFrame({
-                "natural_dna": data["dna"],
-                "prediction_dna": prediction_dna_list,
-            
-            })
-
-            # Save to a new CSV file
-
-            file_path = f"data/evaluate/predicet_csv/{weight_name}_{name[i]}_prediction_dna.csv"
-
-            # 确保目录存在
-            directory = os.path.dirname(file_path)
-            if not os.path.exists(directory):
-                os.makedirs(directory)
-            predict_data.to_csv(file_path, index=False)
-            
-            
-            print(f"{name[i]} organism predict has done!!!")
-            print(f"{name[i]} organism predict has done!!!")
-            print(f"{name[i]} organism predict has done!!!")
-
-
-
-
+        if not is_valid:
+            print(f"prediction_dna:{prediction_dna} is not valid")
+            exit()
     
-        #***********************************codon recover rate***********************************************
 
-        def calculate_similarity(dna1, dna2):
-            """
-            Calculate similarity score between two DNA sequences.
-            For every three codons (triplets), if they are the same, similarity score increases by 1.
+    # Create a new DataFrame with similarity scores
+    predict_data = pd.DataFrame({
+        "natural_dna": data["dna"],
+        "prediction_dna": prediction_dna_list,
+    })
 
-            Args:
-                dna1 (str): First DNA sequence.
-                dna2 (str): Second DNA sequence.
+    # Save to a new CSV file
 
-            Returns:
-                int: Similarity score.
-            """
-            # Ensure both DNA sequences are of the same length
-            min_length = min(len(dna1), len(dna2))
-            dna1 = dna1[:min_length]
-            dna2 = dna2[:min_length]
-
-            # Calculate similarity
-            similarity_score = 0
-            for i in range(0, min_length, 3):  # Iterate in steps of 3 (codon)
-                if dna1[i:i+3] == dna2[i:i+3]:
-                    similarity_score += 1
-
-            return similarity_score/(min_length/3)  # Divide by number of codons
-
-
-        name=['A','E','H','M','S','D','E1','E2']
-
-
-        dataA = pd.read_csv(f"data/evaluate/predicet_csv/{weight_name}_{name[0]}_prediction_dna.csv")
-        dataE = pd.read_csv(f"data/evaluate/predicet_csv/{weight_name}_{name[1]}_prediction_dna.csv")
-        dataH = pd.read_csv(f"data/evaluate/predicet_csv/{weight_name}_{name[2]}_prediction_dna.csv")
-        dataM = pd.read_csv(f"data/evaluate/predicet_csv/{weight_name}_{name[3]}_prediction_dna.csv")
-        dataS = pd.read_csv(f"data/evaluate/predicet_csv/{weight_name}_{name[4]}_prediction_dna.csv")
-        dataD = pd.read_csv(f"data/evaluate/predicet_csv/{weight_name}_{name[5]}_prediction_dna.csv")
-        dataE1 = pd.read_csv(f"data/evaluate/predicet_csv/{weight_name}_{name[6]}_prediction_dna.csv")
-        dataE2 = pd.read_csv(f"data/evaluate/predicet_csv/{weight_name}_{name[7]}_prediction_dna.csv")
-
-        name_path=[]
-        for i in range(len(name)):
-            if i==0:
-                data=dataA
-            elif i==1:
-                data=dataE
-            elif i==2:
-                data=dataH
-            elif i==3:
-                data=dataM
-            elif i==5:
-                data=dataD
-            elif i==6:
-                data=dataE1
-            elif i==7:
-                data=dataE2
-            else:
-                data=dataS
-
-            
-            
-            natural_predict_similarities = []
-
-
-            # Calculate similarity scores for each pair of sequences
-            for _, row in data.iterrows():
-                dna_natural = row["natural_dna"]
-                dna_predict = row["prediction_dna"]
-
-
-                # Calculate similarities
-                natural_pre_similarity = calculate_similarity(dna_natural, dna_predict)
-            
-
-                # Append results to lists
-                natural_predict_similarities.append(natural_pre_similarity)
-
-
-            # Create a new DataFrame with similarity scores
-            similarity_data = pd.DataFrame({
-                "natural_predict_similarity": natural_predict_similarities,
-            
-            })
-
-            # Save to a new CSV file
-            save_path = f"data/evaluate/recovery/{weight_name}_{name[i]}_with_similarity.csv"
-            name_path.append(save_path)
-            # 确保目录存在
-            directory = os.path.dirname(save_path)
-            if not os.path.exists(directory):
-                os.makedirs(directory)
-
-            similarity_data.to_csv(save_path, index=False)
-
-            print(f"Similarity calculations completed and saved to {name[i]}_with_similarity.csv.")
-
-
-        all_column_means = []
-
-        # 遍历每个文件，逐列计算平均值
-        for file in name_path:
-            df = pd.read_csv(file)
-            column_means = df.mean(axis=0)  # 逐列计算平均值
-            #print(column_means)
-            all_column_means.append(column_means)
-
-        # 转换为 DataFrame，计算总体平均值
-        all_means_df = pd.DataFrame(all_column_means)
-        save_path=f"data/evaluate/recovery/ALL/{weight_name}_all_similarity.csv"
-        if new_data:
-          save_path=f"data/infer_test/my_predict/seq_smilar/ALL/new_data/{weight_name}_all_similarity.csv"
-        directory = os.path.dirname(save_path)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
-
-        # Calculate overall mean and add it to the DataFrame
-        overall_mean = all_means_df.mean(axis=0)  # 对每列的平均值再求平均
-        all_means_df.loc['overall_mean'] = overall_mean
-        print("save_path",save_path)
-
-        # Save the DataFrame to a CSV file
-        all_means_df.to_csv(save_path, index=True)
-
-        # 输出结果
-        print("A-E-H-M-S文件逐列平均值：")
-        print(all_means_df)
-        print("\n总体平均值：")
-        print(overall_mean)
-
+    file_path = args.output_file
+    # 确保目录存在
+    directory = os.path.dirname(file_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    predict_data.to_csv(file_path, index=False)

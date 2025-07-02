@@ -31,23 +31,51 @@ All training, fine-tuning, and held-out evaluation datasets are available at:
 We recommend using conda or [virtualenv].
 
     ``` 
-    conda create -n transcodon python=3.8
+    conda env create -f environment.yml
     conda activate transcodon
-    pip install -r requirements.txt
     ``` 
  
 ## 🌍 Usage
 
-``` 
-python predict.py \
---input input_amino_acid.fa \
---species "Escherichia coli" \
---output output_dna.fasta \
---model_path checkpoints/transcodon.pt
-```
+1. Pretrain
+Generate DNA sequences from amino acid sequences using a pretrained TransCodon model:
+
+    ```
+    python pretraining.py \
+        --train_data data/finetune/train.tsv \
+        --output_dir checkpoints/pretain_model \
+        --epochs 5 \
+        --batch_size 3 \
+        --accumulate_gradients 6\
+        --lr 2e-4 \
+        --num_gpus 4\
+    ```
+2.Finetune
+Finetune the pretrained model on a custom dataset (e.g., for codon optimization or other downstream tasks):
+    
+    ```
+    python fintune.py \
+        --train_data data/finetune/fintune.tsv \
+        --output_dir checkpoints/finetuned_model \
+        --pretrained_model checkpoints/transcodon.pt \
+         --epochs 15 \
+        --batch_size 3 \
+        --accumulate_gradients 6\
+        --lr 2e-4 \
+        --num_gpus 2\
+    ```
+
+3.Infer
+    
+    ```
+    python infer.py \
+        --input_data test_amino_acid.csv \
+        --output_file optimized_dna.csv \
+        --model_checkpoint checkpoints/finetuned_model.pt
+    ```
 
 ## 📊 Evaluation
-We provide Jupyter Notebooks for evaluation on metrics like:
+We provide python scripts for evaluation on metrics like:
 
     Codon Recovery Rate
     
@@ -55,14 +83,13 @@ We provide Jupyter Notebooks for evaluation on metrics like:
     
     Codon Frequency Distribution (CFD)
     
-    GC content similarity
+    GC content 
     
-    MFE and structure comparisons
+    MFE energy
     
     %MinMax and DTW score between natural and generated sequences
     
-    Downstream translation prediction (MRL)
-
+   
 ## 📄 Citation
 If you use this work, please cite:
 

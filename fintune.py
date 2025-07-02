@@ -166,6 +166,9 @@ if __name__ == '__main__':
     # parser.add_argument('--max_positions', type=int, default=1024)
     #parser.add_argument('--max_positions', type=int, default=2048)
     #parser.add_argument('--max_positions', type=int, default=2560)
+    parser.add_argument('--train_data', type=str,default='test.csv' )
+    parser.add_argument('--pretrained_model', type=str,default='checkpoints/pretain_model/pretrain.ckpt' )
+    parser.add_argument('--output_dir', type=str,default='checkpoints/pretain_model' )
     parser.add_argument('--max_positions', type=int, default=2048)
 
     #parser.add_argument('--rope_embedding', type=bool, default=False)
@@ -182,7 +185,7 @@ if __name__ == '__main__':
     parser.add_argument('--lr_scheduler', type=str, default='warmup_cosine')
     #parser.add_argument('--lr_scheduler', type=str, default='custom')  # Custom scheduler
     # parser.add_argument('--learning_rate', type=float, default=5e-7)  
-    parser.add_argument('--learning_rate', type=float, default=1e-4) 
+    parser.add_argument('--learning_rate', type=float, default=2e-4) 
     #parser.add_argument('--learning_rate', type=float, default=5e-5) 
     parser.add_argument('--max_epochs', type=int, default=15)
     # parser.add_argument('--num_steps', type=int, default=121000)
@@ -224,7 +227,7 @@ if __name__ == '__main__':
         #exit()
     else:
         datamodule = CodonDataModule(args, alphabet,
-           'top_dataset1_with_cai.csv', args.batch_size)
+           args.train_data,, args.batch_size)
     #exit()
 
     # model
@@ -246,7 +249,8 @@ if __name__ == '__main__':
     #!!!!!!!!!!!!!!!!!!!!!注意这里注释掉了wandb
     # 加载 checkpoint，只加载权重
     model = CodonModel(args, alphabet)
-    ckpt_path = './pretraining/epoch=2-step=225258.ckpt'
+    # ckpt_path = './pretraining/epoch=4-step=225258.ckpt'
+    ckpt_path = args.pretrained_model
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     state_dict = torch.load(ckpt_path, map_location=device)["state_dict"]
     model.load_state_dict(state_dict, strict=False)  # 如果有不匹配项可以设置 strict=False
@@ -262,7 +266,7 @@ if __name__ == '__main__':
     accumulate_grad_batches=args.accumulate_gradients,
     limit_val_batches=1, accelerator='gpu',strategy=DDPStrategy(find_unused_parameters=True), #!!!!!!tag ,should be 0.25
     #limit_val_batches=1.0, accelerator='gpu',strategy='ddp', 
-    callbacks=[PeriodicCheckpoint(1000, name),
+    callbacks=[PeriodicCheckpoint(1000, args.output_dir),
         LearningRateMonitor(logging_interval='step')])
 
     trainer.fit(model, datamodule=datamodule)

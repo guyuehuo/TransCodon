@@ -166,6 +166,8 @@ if __name__ == '__main__':
     # parser.add_argument('--max_positions', type=int, default=1024)
     #parser.add_argument('--max_positions', type=int, default=2048)
     #parser.add_argument('--max_positions', type=int, default=2560)
+    parser.add_argument('--train_data', type=str,default='test.csv' )
+    parser.add_argument('--output_dir', type=str,default='checkpoints/pretain_model' )
     parser.add_argument('--max_positions', type=int, default=2048)
 
     #parser.add_argument('--rope_embedding', type=bool, default=False)
@@ -212,8 +214,10 @@ if __name__ == '__main__':
             'test.csv', args.batch_size)
         #exit()
     else:
+        # datamodule = CodonDataModule(args, alphabet,
+        #    'data1234_with_2d_structure.csv', args.batch_size)
         datamodule = CodonDataModule(args, alphabet,
-           'data1234_with_2d_structure.csv', args.batch_size)
+           args.train_data, args.batch_size)
 
     model = CodonModel(args, alphabet)
 
@@ -238,7 +242,7 @@ if __name__ == '__main__':
     accumulate_grad_batches=args.accumulate_gradients,
     limit_val_batches=0.1, accelerator='gpu',strategy=DDPStrategy(find_unused_parameters=True), #!!!!!!tag ,should be 0.25
     #limit_val_batches=1.0, accelerator='gpu',strategy='ddp', 
-    callbacks=[PeriodicCheckpoint(20000, name),
+    callbacks=[PeriodicCheckpoint(20000, args.output_dir),
         LearningRateMonitor(logging_interval='step')])
 
     #trainer.fit(model, datamodule=datamodule, ckpt_path='./transcodon-run1/epoch=4-step=11746.ckpt')
