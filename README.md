@@ -23,8 +23,8 @@ All training, fine-tuning, and held-out evaluation datasets are available at:
 1. Clone the repository
 
     ``` 
-    git clone https://github.com/guyuehuo/transcodon.git
-    cd transcodon
+        git clone https://github.com/guyuehuo/transcodon.git
+        cd transcodon
    ```
    
 2. Set up environment
@@ -32,8 +32,8 @@ All training, fine-tuning, and held-out evaluation datasets are available at:
 We recommend using conda or [virtualenv].
 
     ``` 
-    conda env create -f environment.yml
-    conda activate transcodon
+        conda env create -f environment.yml
+        conda activate transcodon
     ``` 
  
 ## 🌍 Usage
@@ -43,14 +43,14 @@ We recommend using conda or [virtualenv].
 Generate DNA sequences from amino acid sequences using a pretrained TransCodon model:
 
     ```
-    python pretraining.py \
-        --train_data data/finetune/train.tsv \
-        --output_dir checkpoints/pretain_model \
-        --epochs 5 \
-        --batch_size 3 \
-        --accumulate_gradients 6\
-        --lr 2e-4 \
-        --num_gpus 4\
+        python pretraining.py \
+            --train_data data/finetune/train.tsv \
+            --output_dir checkpoints/pretain_model \
+            --epochs 5 \
+            --batch_size 3 \
+            --accumulate_gradients 6\
+            --lr 2e-4 \
+            --num_gpus 4\
     ```
 
 2. Finetune
@@ -58,15 +58,15 @@ Generate DNA sequences from amino acid sequences using a pretrained TransCodon m
 Finetune the pretrained model on a custom dataset (e.g., for codon optimization or other downstream tasks):
     
     ```
-    python fintune.py \
-        --train_data data/finetune/fintune.tsv \
-        --output_dir checkpoints/finetuned_model \
-        --pretrained_model checkpoints/transcodon.pt \
-         --epochs 15 \
-        --batch_size 3 \
-        --accumulate_gradients 6\
-        --lr 2e-4 \
-        --num_gpus 2\
+        python fintune.py \
+            --train_data data/finetune/fintune.tsv \
+            --output_dir checkpoints/finetuned_model \
+            --pretrained_model checkpoints/transcodon.pt \
+             --epochs 15 \
+            --batch_size 3 \
+            --accumulate_gradients 6\
+            --lr 2e-4 \
+            --num_gpus 2\
     ```
 
 3. Infer
@@ -74,10 +74,10 @@ Finetune the pretrained model on a custom dataset (e.g., for codon optimization 
 Given an input amino acid sequence and a specified host species, TransCodon generates a DNA sequence that conforms to the natural codon usage landscape of the target species. This enables codon optimization for heterologous expression while preserving biological realism.
     
     ```
-    python infer.py \
-        --input_data test_amino_acid.csv \
-        --output_file optimized_dna.csv \
-        --model_checkpoint checkpoints/finetuned_model.pt
+        python infer.py \
+            --input_data test_amino_acid.csv \
+            --output_file optimized_dna.csv \
+            --model_checkpoint checkpoints/finetuned_model.pt
     ```
 
 ## 📊 Evaluation
