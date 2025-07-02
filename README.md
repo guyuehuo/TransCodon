@@ -50,7 +50,8 @@ Generate DNA sequences from amino acid sequences using a pretrained TransCodon m
         --lr 2e-4 \
         --num_gpus 4\
     ```
-2.Finetune
+
+2. Finetune
 Finetune the pretrained model on a custom dataset (e.g., for codon optimization or other downstream tasks):
     
     ```
@@ -65,7 +66,8 @@ Finetune the pretrained model on a custom dataset (e.g., for codon optimization 
         --num_gpus 2\
     ```
 
-3.Infer
+3. Infer
+Given an input amino acid sequence and a specified host species, TransCodon generates a DNA sequence that conforms to the natural codon usage landscape of the target species. This enables codon optimization for heterologous expression while preserving biological realism.
     
     ```
     python infer.py \
