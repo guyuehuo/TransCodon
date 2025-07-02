@@ -28,6 +28,7 @@ All training, fine-tuning, and held-out evaluation datasets are available at:
    ```
    
 2. Set up environment
+
 We recommend using conda or [virtualenv].
 
     ``` 
@@ -38,6 +39,7 @@ We recommend using conda or [virtualenv].
 ## 🌍 Usage
 
 1. Pretrain
+
 Generate DNA sequences from amino acid sequences using a pretrained TransCodon model:
 
     ```
@@ -52,6 +54,7 @@ Generate DNA sequences from amino acid sequences using a pretrained TransCodon m
     ```
 
 2. Finetune
+
 Finetune the pretrained model on a custom dataset (e.g., for codon optimization or other downstream tasks):
     
     ```
@@ -67,6 +70,7 @@ Finetune the pretrained model on a custom dataset (e.g., for codon optimization 
     ```
 
 3. Infer
+
 Given an input amino acid sequence and a specified host species, TransCodon generates a DNA sequence that conforms to the natural codon usage landscape of the target species. This enables codon optimization for heterologous expression while preserving biological realism.
     
     ```
