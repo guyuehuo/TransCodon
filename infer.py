@@ -20,6 +20,7 @@ import time
 import pandas as pd
 from collections import defaultdict
 from dtw import accelerated_dtw
+import safetensors.torch
 
 codon_to_amino_acid = {
     'UUU': 'F', 'UUC': 'F',
@@ -233,11 +234,19 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=6, help='Batch size for inference')
     parser.add_argument('--output_file', type=str, default='predictions.csv', help='File to save the predictions')
 
+    ProteinBertModel.add_args(parser)
+
     args = parser.parse_args()
 
     # Load the alphabet and data module
     alphabet = Alphabet.from_architecture('CodonModel')
-    model = CodonModel.load_from_checkpoint(args.model_checkpoint, alphabet=alphabet)
+    # args.model_checkpoint="/sugon_store/huqiuyue/calm/new_alphabet/2d_mask_predict-5M/CaLM-run28_V100/epoch=2-step=225258.ckpt"
+    # model = CodonModel.load_from_checkpoint(args.model_checkpoint, alphabet=alphabet)
+
+    model = CodonModel(args, alphabet)
+    state_dict = safetensors.torch.load_file(args.model_checkpoint)
+    model.load_state_dict(state_dict)
+
     #model.to(device)
     model.eval()  # Set the model to evaluation mode
     model.freeze()  # Ensure no gradients are calculated
@@ -248,7 +257,7 @@ if __name__ == '__main__':
     is_valid = True
 
     for _, row in data.iterrows():
-        AA_seq = row["protein"]
+        AA_seq = row["protein_seq"]
         input=AA_tokenize(AA_seq)
         # if not use_repo:
         if len(input)>2048*3:
@@ -272,7 +281,7 @@ if __name__ == '__main__':
 
     # Create a new DataFrame with similarity scores
     predict_data = pd.DataFrame({
-        "natural_dna": data["dna"],
+        "natural_dna": data["cds_sequence"],
         "prediction_dna": prediction_dna_list,
     })
 
