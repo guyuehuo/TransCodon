@@ -15,7 +15,7 @@ from checkpointing import PeriodicCheckpoint
 from transcodon.sequence import CodonSequence
 from transcodon.alphabet import Alphabet,ORGANISM2ID
 from transcodon.model import ProteinBertModel
-from transcodon.infer import embed_sequence, embed_sequences, tokenize
+from transcodon.infer_utr import embed_sequence, embed_sequences, tokenize
 import time
 import pandas as pd
 from collections import defaultdict
@@ -233,6 +233,7 @@ if __name__ == '__main__':
     parser.add_argument('--input_data', type=str,default="input.csv",help='Path to the input data for inference')
     parser.add_argument('--batch_size', type=int, default=6, help='Batch size for inference')
     parser.add_argument('--output_file', type=str, default='predictions.csv', help='File to save the predictions')
+    parser.add_argument('--with_utr', action='store_true', help='add utr sequence for infer')
 
     ProteinBertModel.add_args(parser)
 
@@ -265,9 +266,13 @@ if __name__ == '__main__':
                 AA_seq=AA_seq[:2048]
                 input=input[:2048*3]
         organism = ORGANISM2ID[row["organism"]]
-       
 
-        embedding,logits,prediction_dna = embed_sequence(model,input,organism,AA_seq)
+        utr_seq="false"
+        if args.with_utr:
+            utr_seq=row["utr"]
+       
+        print("utr_seq",utr_seq)
+        embedding,logits,prediction_dna = embed_sequence(model,utr_seq,input,organism,AA_seq)
 
         # Append results to lists
         prediction_dna_list.append(prediction_dna.replace('U','T'))
