@@ -44,7 +44,7 @@ Generate DNA sequences from amino acid sequences using a pretrained TransCodon m
 
 
     python pretraining.py \
-        --train_data data/finetune/train.tsv \
+        --train_data data/finetune/train.csv \
         --output_dir checkpoints/pretain_model \
         --epochs 5 \
         --batch_size 3 \
@@ -59,7 +59,7 @@ Finetune the pretrained model on a custom dataset (e.g., for codon optimization 
     
   
     python fintune.py \
-        --train_data data/finetune/fintune.tsv \
+        --train_data data/finetune/fintune.csv \
         --output_dir checkpoints/finetuned_model \
         --pretrained_model checkpoints/transcodon.pt \
          --epochs 15 \
@@ -75,7 +75,7 @@ Given an input amino acid sequence and a specified host species, TransCodon gene
  
     python infer.py \
         --input_data test_amino_acid.csv \
-        --output_file optimized_dna.csv \
+        --output_file ./optimized_dna.csv \
         --model_checkpoint checkpoints/finetuned_model.pt
 
 
