@@ -281,7 +281,8 @@ if __name__ == '__main__':
 
     # Create a new DataFrame with similarity scores
     predict_data = pd.DataFrame({
-        "natural_dna": data["cds_sequence"],
+        "organism": data["organism"],
+        "protein_seq": data["protein_seq"],
         "prediction_dna": prediction_dna_list,
     })
 
