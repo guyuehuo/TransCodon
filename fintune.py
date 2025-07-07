@@ -202,9 +202,6 @@ if __name__ == '__main__':
     # 然后计算 total_steps
     print("args.num_steps:",args.num_steps)
     # args.num_steps=int((2298185 * args.max_epochs) / (args.batch_size * args.num_gpus * args.accumulate_gradients))
-    # args.num_steps=int((4027021 * args.max_epochs) / (args.batch_size * args.num_gpus * args.accumulate_gradients))
-    # args.num_steps=int((10942365 * args.max_epochs) / (args.batch_size * args.num_gpus * args.accumulate_gradients))
-    # args.num_steps=int((18377 * args.max_epochs) / (args.batch_size * args.num_gpus * args.accumulate_gradients))
     args.num_steps=int((3556 * args.max_epochs) / (args.batch_size * args.num_gpus * args.accumulate_gradients))
     #args.num_steps=int((27562 * args.max_epochs) / (args.batch_size * args.num_gpus * args.accumulate_gradients))
     args.warmup_steps=int(args.num_steps*0.1)
@@ -230,30 +227,25 @@ if __name__ == '__main__':
            args.train_data,, args.batch_size)
     #exit()
 
-    # model
-   
-
-    # training
-
     name='transcodon-fintune-epoch15'
 
     time_begin=time.time()
     print('time begin:',time_begin)
 
-    #name = 'Codon-AA'
-    #!!!!!!!!!!!!!!!!!!!!!注意这里注释掉了wandb
-    # wandb.init(mode="offline")
-    # logger = WandbLogger(name=name, project='data1', version='version1-18')
     logger = TensorBoardLogger("board_logs", name=name) 
 
     #!!!!!!!!!!!!!!!!!!!!!注意这里注释掉了wandb
     # 加载 checkpoint，只加载权重
-    model = CodonModel(args, alphabet)
+    #model = CodonModel(args, alphabet)
     # ckpt_path = './pretraining/epoch=4-step=225258.ckpt'
-    ckpt_path = args.pretrained_model
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    state_dict = torch.load(ckpt_path, map_location=device)["state_dict"]
-    model.load_state_dict(state_dict, strict=False)  # 如果有不匹配项可以设置 strict=False
+    # ckpt_path = args.pretrained_model
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # state_dict = torch.load(ckpt_path, map_location=device)["state_dict"]
+    # model.load_state_dict(state_dict, strict=False)  # 如果有不匹配项可以设置 strict=False
+
+    model = CodonModel(args, alphabet)
+    state_dict = safetensors.torch.load_file(args.pretrained_model)
+    model.load_state_dict(state_dict, strict=False)
 
 
     trainer = pl.Trainer(num_nodes=1, precision='16-mixed',
