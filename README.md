@@ -1,5 +1,5 @@
 
-# TransCodon: a species-informed transformer model for cross-species codon optimization
+# Learning the native-like codons with a 5'UTR and secondary RNA structure aided species-informed transformer model
 ## Overview
 TransCodon is a transformer-based model for cross-species codon optimization, integrating 5′UTR sequences, coding regions, species identifiers, and RNA secondary structure features. It enables zero-shot prediction of gene expression potential and supports regulatory sequence design.
 
