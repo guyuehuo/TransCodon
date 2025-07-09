@@ -99,7 +99,7 @@ We provide python scripts for evaluation on metrics like:
 If you use this work, please cite:
 
     @misc{TransCodon2025,
-      title={TransCodon: a species-informed transformer model for cross-species codon optimization},
+      title={Learning the native-like codons with a 5'UTR and secondary RNA structure aided species-informed transformer model},
       author={Hu et al.},
       year={2025},
       note={Preprint available upon request}
