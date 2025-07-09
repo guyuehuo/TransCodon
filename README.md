@@ -74,7 +74,7 @@ Finetune the pretrained model on a custom dataset (e.g., for codon optimization 
 Given an input amino acid sequence and a specified host species, TransCodon generates a DNA sequence that conforms to the natural codon usage landscape of the target species. This enables codon optimization for heterologous expression while preserving biological realism.
  
     python infer.py \
-        --input_data test_amino_acid.csv \
+        --input_data ./test.csv \
         --output_file ./optimized_dna.csv \
         --model_checkpoint checkpoints/finetuned_model.pt
 
