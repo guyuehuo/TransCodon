@@ -18,6 +18,10 @@ All training, fine-tuning, and held-out evaluation datasets are available at:
 
 🔗 [Google Drive Dataset Folder](https://drive.google.com/drive/folders/17ZKlxM0VF38s9eQXwpKJ6WlgmNMYsZjI?usp=drive_link)
 
+The pretrained model weights can be downloaded from:
+
+🔗 [huggingface](https://huggingface.co/guyuehuo/TransCodon)
+
 
 ## 🛠Installation
 1. Clone the repository
