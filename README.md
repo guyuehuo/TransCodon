@@ -105,8 +105,10 @@ If you use this work, please cite:
     @misc{TransCodon2025,
       title={Learning the native-like codons with a 5'UTR and secondary RNA structure aided species-informed transformer model},
       author={Hu et al.},
-      year={2025},
-      note={Preprint available upon request}
+      doi = {10.1101/2025.07.19.665668},
+      journal = {bioRxiv},
+      year = {2025},
+      note = {Preprint}
     }
 
 ## 📬 Contact
