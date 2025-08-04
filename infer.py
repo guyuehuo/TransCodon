@@ -112,7 +112,7 @@ amino_acid_to_codon = {
         }
 def AA_tokenize(seq: str):
     token=''
-    for i in range(len(seq)):
+    for i in range(len(seq)-1):
         if seq[i]=='L':
            token+=("*U*")
         elif seq[i]=='R':
@@ -260,6 +260,7 @@ if __name__ == '__main__':
 
     for _, row in data.iterrows():
         AA_seq = row["protein_seq"]
+        AA_seq+='_'  #for termination codon
         input=AA_tokenize(AA_seq)
         # if not use_repo:
         if len(input)>2048*3:
