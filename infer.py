@@ -112,7 +112,7 @@ amino_acid_to_codon = {
         }
 def AA_tokenize(seq: str):
     token=''
-    for i in range(len(seq)-1):
+    for i in range(len(seq)):
         if seq[i]=='L':
            token+=("*U*")
         elif seq[i]=='R':
@@ -122,6 +122,7 @@ def AA_tokenize(seq: str):
         else:
             token+=amino_acid_to_codon[seq[i]][0][:2]
             token+='*'
+    #Add termination codon
     token+="U**"
     #print("seq",seq)
     #print("token",token)
